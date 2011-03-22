@@ -1,0 +1,88 @@
+# depslib dependency file v1.0
+1300139600 source:/home/lilezek/proyectos/cheat engine/speedhack.cpp
+	<iostream>
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/time.h>
+	<dlfcn.h>
+
+1300201815 source:/home/lilezek/proyectos/cheat engine/speedhack.c
+	<sys/types.h>
+	<unistd.h>
+	<sys/stat.h>
+	<sys/time.h>
+	<dlfcn.h>
+
+1300290783 source:/home/lilezek/proyectos/cheat_engine/speedhack.cpp
+	<stdio.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/time.h>
+	<dlfcn.h>
+	<fstream>
+	<string>
+	<sstream>
+	<pwd.h>
+
+1300301316 source:/home/lilezek/proyectos/cheat_engine/openglhack.cpp
+	<stdio.h>
+	<stdlib.h>
+	<dlfcn.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1300814606 source:/home/lilezek/proyectos/cheat_engine/main.cpp
+	<stdlib.h>
+	<stdlib.h>
+	<iostream>
+	"misc.h"
+	"memory.h"
+	"speedhack.h"
+
+1300718504 /home/lilezek/proyectos/cheat_engine/misc.h
+	<string>
+
+1300742597 /home/lilezek/proyectos/cheat_engine/memory.h
+	"config.h"
+	<time.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/ptrace.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<unistd.h>
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<assert.h>
+	<errno.h>
+	<stdbool.h>
+	<limits.h>
+	<fcntl.h>
+	<iostream>
+
+1300814685 source:/home/lilezek/proyectos/cheat_engine/memory.cpp
+	"memory.h"
+
+1300741202 source:/home/lilezek/proyectos/cheat_engine/misc.cpp
+	"misc.h"
+	<iostream>
+
+1299770595 /home/lilezek/proyectos/cheat_engine/config.h
+
+1300740345 /home/lilezek/proyectos/cheat_engine/value.h
+
+1300739555 source:/home/lilezek/proyectos/cheat_engine/value.cpp
+
+1300742155 /home/lilezek/proyectos/cheat_engine/speedhack.h
+	<sys/types.h>
+	<sstream>
+	<string>
+	<fstream>
+	<iostream>
+
+1300743016 source:/home/lilezek/proyectos/cheat_engine/speedhack_utility.cpp
+	"speedhack.h"
+	"memory.h"
+

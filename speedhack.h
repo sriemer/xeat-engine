@@ -4,10 +4,9 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <pwd.h>
 
 using namespace std;
-
-void setSpeedFolder(const char * fd);
 
 // Sets m/n speedhack to a speedhacked program.
 void setSpeed(pid_t target, int m, int n);

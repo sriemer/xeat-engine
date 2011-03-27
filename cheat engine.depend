@@ -86,3 +86,75 @@
 	"speedhack.h"
 	"memory.h"
 
+1300821885 source:/home/lilezek/proyectos/xeat-engine/random.cpp
+	<stdio.h>
+	<stdlib.h>
+	<dlfcn.h>
+
+1301229450 source:/home/lilezek/proyectos/xeat-engine/speedhack.cpp
+	<stdio.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/time.h>
+	<dlfcn.h>
+	<fstream>
+	<string>
+	<sstream>
+	<pwd.h>
+
+1301232984 source:/home/lilezek/proyectos/xeat-engine/misc.cpp
+	"misc.h"
+	<iostream>
+	<fstream>
+	<stdio.h>
+	<string.h>
+	<pwd.h>
+
+1301231639 /home/lilezek/proyectos/xeat-engine/misc.h
+	<string>
+
+1301233583 source:/home/lilezek/proyectos/xeat-engine/main.cpp
+	<stdlib.h>
+	<stdlib.h>
+	<iostream>
+	"misc.h"
+	"memory.h"
+	"speedhack.h"
+
+1301067843 /home/lilezek/proyectos/xeat-engine/memory.h
+	"config.h"
+	<time.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/ptrace.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<unistd.h>
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<assert.h>
+	<errno.h>
+	<stdbool.h>
+	<limits.h>
+	<fcntl.h>
+	<iostream>
+
+1301067843 /home/lilezek/proyectos/xeat-engine/config.h
+
+1301231607 /home/lilezek/proyectos/xeat-engine/speedhack.h
+	<sys/types.h>
+	<sstream>
+	<string>
+	<fstream>
+	<iostream>
+	<pwd.h>
+
+1301228325 source:/home/lilezek/proyectos/xeat-engine/memory.cpp
+	"memory.h"
+
+1301231231 source:/home/lilezek/proyectos/xeat-engine/speedhack_utility.cpp
+	"speedhack.h"
+	"memory.h"
+

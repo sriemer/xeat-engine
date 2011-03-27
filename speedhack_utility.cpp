@@ -1,18 +1,14 @@
 #include "speedhack.h"
 #include "memory.h"
-
-static char speedFolder[260];
-
-void setSpeedFolder(const char * fd)
-{
-    strcpy(speedFolder,fd);
-}
+#include "misc.h"
 
 // Sets m/n speedhack to a speedhacked program.
 void setSpeed(pid_t target, int m, int n)
 {
     stringstream sstr;
-    sstr << speedFolder << target;
+    sstr.str("");
+    sstr << homeDirectory(target) << "/.speedhack/" << target;
+
     attach(target);
 
     ifstream spd(sstr.str().c_str());
@@ -30,8 +26,12 @@ void setSpeed(pid_t target, int m, int n)
 void getSpeed(pid_t target, int * m, int * n)
 {
     stringstream sstr;
-    sstr << speedFolder << target;
+    sstr.str("");
+    sstr << homeDirectory(target) << "/.speedhack/" << target;
+
     attach(target);
+
+    cout << sstr.str().c_str() << endl;
 
     ifstream spd(sstr.str().c_str());
     long int pos;

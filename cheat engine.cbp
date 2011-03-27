@@ -154,10 +154,14 @@
 		<Unit filename="misc.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
+			<Option target="speedhack32" />
+			<Option target="speedhack" />
 		</Unit>
 		<Unit filename="misc.h">
 			<Option target="Debug" />
 			<Option target="Release" />
+			<Option target="speedhack32" />
+			<Option target="speedhack" />
 		</Unit>
 		<Unit filename="openglhack.cpp">
 			<Option target="openglhack" />
@@ -176,17 +180,10 @@
 			<Option target="speedhack32" />
 		</Unit>
 		<Unit filename="speedhack.h">
-			<Option target="speedhack" />
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="speedhack_utility.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="value.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="value.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

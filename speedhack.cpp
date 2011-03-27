@@ -8,29 +8,25 @@
 #include <string>
 #include <sstream>
 #include <pwd.h>
+#include "misc.h"
 
 
 using std::ofstream;
 using std::string;
 
 static timeval * timezero = 0;
-static timespec * timespcz = 0;
 static timeval lasttv;
-static timespec lastpz;
 static timeval offsettv;
-static timespec offsetts;
 static ofstream * outputMemory = 0;
 
 // Output memory is a file to show where is int M and int N in memory,
 // so you can modify speed hack in run time without the need of recompile library:
 typedef int (*go)(timeval *tv, class timezone *tz);
-typedef int (*cg)(clockid_t clckid, timespec * ts);
 
 static go gettimeofday_orig = 0;
-static cg clock_gettime_orig = 0;
 
 // Multiply speed:
-int M = 4;
+int M = 1;
 // Divide speed:
 int N = 1;
 // That means 1/2 speed;
@@ -44,16 +40,21 @@ void outputMandN()
 {
     // Get home directory
     struct passwd *pw = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
 
-    string s = homedir;
+    string s = pw->pw_dir;
 
     // Adding some information to directory:
+
+    // Makedir if not exists:
+    // mkdir -p "~/.speedhack/"
     std::stringstream buf;
-    buf << getpid();
-    s += "/.speedhack/";
-    s += buf.str();
-    outputMemory = new ofstream(s.c_str());
+    buf << "mkdir -p \"" << homeDirectory(getpid()) << "/.speedhack/\"";
+    system(buf.str().c_str());
+
+    buf.str("");
+    buf << homeDirectory(getpid()) << "/.speedhack/" << getpid();
+
+    outputMemory = new ofstream(buf.str().c_str());
     if (outputMemory->bad())
     {
         outputMemory = 0;
@@ -63,14 +64,8 @@ void outputMandN()
     outputMemory->close();
 }
 
-void resetValues(clockid_t clckid)
+void resetValues()
 {
-    if (clckid != -1 && timespcz && clock_gettime_orig)
-    {
-        clock_gettime_orig(clckid,&offsetts);
-        offsetts.tv_sec = lastpz.tv_sec - offsetts.tv_sec;
-        offsetts.tv_nsec = lastpz.tv_nsec - offsetts.tv_nsec;
-    }
     if (timezero && gettimeofday_orig)
     {
         timeval tv;
@@ -97,50 +92,10 @@ void resetValues(clockid_t clckid)
     N_old = N;
 }
 
-extern "C" int clock_gettime(clockid_t clckid, timespec * ts)
-{
-    if (M_old != M || N_old != N)
-        resetValues(clckid);
-    int val;
-    clock_gettime_orig=(cg)dlsym(RTLD_NEXT,"clock_gettime");
-    // Output memory is a file to show where is int M and int N in memory,
-    // so you can modify speed hack in run time without the need of recompile library:
-    if (!outputMemory)
-        outputMandN();
-    if (!timespcz)
-    {
-        timespcz = new timespec;
-        val = clock_gettime_orig(clckid,timespcz);
-        (*ts) = (*timespcz);
-        return val;
-    }
-    val = clock_gettime_orig(clckid,ts);
-    // Multiply the seconds:
-    ts->tv_sec = M*ts->tv_sec - M*timespcz->tv_sec + N*timespcz->tv_sec + offsetts.tv_sec;
-    // Multiply the microseconds:
-    ts->tv_nsec = M*ts->tv_nsec - M*timespcz->tv_nsec + N*timespcz->tv_nsec + offsetts.tv_sec;
-    // Add the modulus of seconds to microseconds:
-    ts->tv_nsec += ((ts->tv_sec % N) * 1000000000);
-    ts->tv_sec /= N;
-    ts->tv_nsec /= N;
-    while(ts->tv_nsec >= 1000000000)
-    {
-        ts->tv_nsec -= 1000000000;
-        ts->tv_sec += 1;
-    }
-    while(ts->tv_nsec < 0)
-    {
-        ts->tv_nsec += 1000000000;
-        ts->tv_sec -= 1;
-    }
-    lastpz = (*ts);
-    return val;
-}
-
 extern "C" int gettimeofday(timeval *tv, class timezone *tz)
 {
     if (M_old != M || N_old != N)
-        resetValues(-1);
+        resetValues();
     int val;
     gettimeofday_orig=(go)dlsym(RTLD_NEXT,"gettimeofday");
     // Output memory is a file to show where is int M and int N in memory,

@@ -14,6 +14,8 @@ using std::string;
 // rwxp, r--p, ---p, rw-p, r-xp...
 char permissionFlags(string str);
 
+// Returns ~/ of a determinated program.
+const char * homeDirectory(pid_t target);
 
 #endif // MISC_H
 

@@ -44,8 +44,25 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include "misc.h"
 
 using namespace std;
+
+/* to use with /proc/pid/maps */
+struct s_map
+{
+
+    void * start;
+    void * end;
+    char perms[5];
+    void * offset;
+    // ignored device
+    // ignored inode
+    // ignored pathname
+};
 
 #define show_info printf
 #define show_error printf
@@ -59,3 +76,9 @@ ssize_t readregion(pid_t target, void *buf, size_t count, unsigned long offset);
 
 /* write region using /proc/pid/mem */
 ssize_t writeregion(pid_t target, void *buf, size_t count, unsigned long offset);
+
+/* Returns readable regions */
+vector<s_map> readableRegions(pid_t target);
+
+/* Returns writeable (and readable) regions */
+vector<s_map> writeableRegions(pid_t target);

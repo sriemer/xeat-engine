@@ -12,7 +12,7 @@ using std::string;
 
 // This function must get something like
 // rwxp, r--p, ---p, rw-p, r-xp...
-char permissionFlags(string str);
+char permissionFlags(char * str);
 
 // Returns ~/ of a determinated program.
 const char * homeDirectory(pid_t target);

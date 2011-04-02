@@ -89,4 +89,69 @@ ssize_t writeregion(pid_t target, void *buf, size_t count, unsigned long offset)
     return size;
 }
 
+/* Returns readable regions */
+vector<s_map> readableRegions(pid_t target)
+{
+    char mapsfile[32];
+    vector<s_map> result;
+    string tmp;
+    stringstream sstr;
+
+    /* print the path to maps file */
+    snprintf(mapsfile, sizeof(mapsfile), "/proc/%d/maps", target);
+    ifstream mapsf(mapsfile);
+
+    if (mapsf.bad())
+    {
+        show_error("%s: can not open file",mapsfile);
+        return result;
+    }
+    while(!mapsf.eof())
+    {
+        s_map tmpsmap;
+        // Get first line
+        getline(mapsf,tmp);
+        // Erase the '-' so "000000000-000000000" become "000000000 000000000"
+        tmp[tmp.find('-')] = ' ';
+        // Put it in stringstream:
+        sstr.str(tmp);
+        sstr >> tmpsmap.start >> tmpsmap.end >> tmpsmap.perms >> tmpsmap.offset;
+        if (permissionFlags(tmpsmap.perms)&F_READ_ONLY)
+            result.push_back(tmpsmap);
+    }
+    return result;
+}
+
+/* Returns writeable (and readable) regions */
+vector<s_map> writeableRegions(pid_t target)
+{
+    char mapsfile[32];
+    vector<s_map> result;
+    string tmp;
+    stringstream sstr;
+
+    /* print the path to maps file */
+    snprintf(mapsfile, sizeof(mapsfile), "/proc/%d/maps", target);
+    ifstream mapsf(mapsfile);
+
+    if (mapsf.bad())
+    {
+        show_error("%s: can not open file",mapsfile);
+        return result;
+    }
+    while(!mapsf.eof())
+    {
+        s_map tmpsmap;
+        // Get first line
+        getline(mapsf,tmp);
+        // Erase the '-' so "000000000-000000000" become "000000000 000000000"
+        tmp[tmp.find('-')] = ' ';
+        // Put it in stringstream:
+        sstr.str(tmp);
+        sstr >> tmpsmap.start >> tmpsmap.end >> tmpsmap.perms >> tmpsmap.offset;
+        if (permissionFlags(tmpsmap.perms)&F_WRITE_ONLY)
+            result.push_back(tmpsmap);
+    }
+    return result;
+}
 

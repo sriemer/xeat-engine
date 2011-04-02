@@ -5,12 +5,25 @@
 #include <string.h>
 #include <pwd.h>
 
-char permissionFlags(string str)
+// alias for string.h functions
+// so they are not so cryptic
+
+#define StringCopy(target,source) strcpy(target,source)
+#define StringFind(target,character) strchr(target,character)
+#define StringToInt(target) atoi(target)
+#define StringToLong(target) atoll(target)
+#define StringToDouble(target) atof(target)
+
+#ifndef NULL
+    #define NULL 0
+#endif
+
+char permissionFlags(char * str)
 {
     char result = 0;
-    if (str.find("r") != string::npos)
+    if (StringFind(str,'r') != NULL)
         result |= F_READ_ONLY;
-    if (str.find("w") != string::npos)
+    if (StringFind(str,'w') != NULL)
         result |= F_WRITE_ONLY;
     return result;
 }

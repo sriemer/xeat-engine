@@ -15,6 +15,7 @@
 				<Option host_application="/usr/bin/sudo" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-D_DEBUG" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -135,10 +136,6 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="config.h">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
 		<Unit filename="main.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -174,6 +171,14 @@
 		<Unit filename="random.h">
 			<Option target="unradom" />
 			<Option target="unradom32" />
+		</Unit>
+		<Unit filename="reader.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="reader.h">
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="speedhack.cpp">
 			<Option target="speedhack" />

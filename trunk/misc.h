@@ -17,5 +17,12 @@ char permissionFlags(char * str);
 // Returns ~/ of a determinated program.
 const char * homeDirectory(pid_t target);
 
+// Alias:
+
+#ifdef _DEBUG
+#define show_info printf
+#endif
+#define show_error printf
+
 #endif // MISC_H
 

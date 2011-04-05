@@ -1,4 +1,4 @@
-// This file includes several parts of ptrace.c of scanmem program.
+// This file includes several parts of file ptrace.c of 'scanmem' proyect.
 
 #include "memory.h"
 
@@ -15,10 +15,9 @@ bool attach(pid_t target)
     /* wait for the SIGSTOP to take place. */
     if (waitpid(target, &status, 0) == -1 || !WIFSTOPPED(status)) {
         show_error("there was an error waiting for the target to stop.\n");
-        show_info("%s\n", strerror(errno));
+        show_error("%s\n", strerror(errno));
         return false;
     }
-
 
     /* everything looks okay */
     return true;
@@ -49,7 +48,7 @@ ssize_t readregion(pid_t target, void *buf, size_t count, unsigned long offset)
 
     /* try to honour the request */
     int tmp;
-    while (len < count)
+    while ((size_t)len < count)
     {
         tmp = pread(fd, (void*)((long)buf + len), count - len , offset + len);
         if (tmp == -1)
@@ -82,7 +81,7 @@ ssize_t writeregion(pid_t target, void *buf, size_t count, unsigned long offset)
         if (ptrace(PTRACE_POKEDATA, target, offset + i*sizeof(void*), tmp[i]) == -1L)
         {
             show_error("POKEDATA failed.\n");
-            show_info("%s\n", strerror(errno));
+            show_error("%s\n", strerror(errno));
             return false;
         }
     }
@@ -144,7 +143,7 @@ vector<s_map> writeableRegions(pid_t target)
         s_map tmpsmap;
         // Get first line
         getline(mapsf,tmp);
-        // Erase the '-' so "000000000-000000000" become "000000000 000000000"
+        // Erase the '-' so "00000000-00000000" become "00000000 00000000"
         tmp[tmp.find('-')] = ' ';
         // Put it in stringstream:
         sstr.str(tmp);
@@ -155,3 +154,127 @@ vector<s_map> writeableRegions(pid_t target)
     return result;
 }
 
+FILE * snapshot(pid_t target, bool writeable)
+{
+    // Attach program for read
+    attach(target);
+    // Create tmp file
+    FILE * result = tmpfile();
+    if (!result)
+    {
+        show_error("Xeat Engine failed to create a temporary file\n");
+        return NULL;
+    }
+    // Create tmp buffer
+    void * buffer = malloc(BUFFER_SIZE);
+    // Get readable regions or writable regions depending on writeable value:
+    vector<s_map> regions = (writeable ? writeableRegions(target) : readableRegions(target));
+    if (regions.size() < 1)
+    {
+        show_error("Xeat Engine failed to get any %s memory region from pid %i\n",(writeable ? "writeable" : "readable"),target);
+        return NULL;
+    }
+    // Loop throught all regions:
+
+    for (vector<s_map>::iterator it = regions.begin(); it < regions.end(); it++)
+    {
+        // Create a header to write on snapshot file:
+        s_snapshot_header tmp;
+        // Initialize it:
+        tmp.perms = permissionFlags(it->perms);
+        tmp.size = (unsigned long)it->end - (unsigned long)it->start;
+        tmp.start = it->start;
+        // Write it as header:
+        fwrite(&tmp,sizeof(tmp),1,result);
+        // Start copying the region:
+        long reading = BUFFER_SIZE;
+        for (unsigned long l = (unsigned long)it->start; l < (unsigned long)it->end;l+=BUFFER_SIZE)
+        {
+            reading = BUFFER_SIZE;
+            if ((l + BUFFER_SIZE) > (unsigned long)it->end)
+                reading = (unsigned long)it->end - l;
+            readregion(target,buffer,reading,l);
+            fwrite(buffer,reading,1,result);
+        }
+    }
+    // Move file pointer to beginning
+    fseek(result,0,SEEK_SET);
+    // Free pointer
+    free(buffer);
+    // Detach program
+    detach(target);
+    return result;
+}
+
+// Returns a FILE with a scan. If no ocurrences found,
+// the return value is NULL.
+FILE * searchValue(pid_t target,FILE * lastScan, bool readonly, any_value& buff, SCAN_TYPE stype, long * ocurrences)
+{
+    // Create tmp file
+    FILE * result = tmpfile();
+    if (!result)
+    {
+        show_error("Xeat Engine failed to create a temporary file\n");
+        return NULL;
+    }
+
+    FILE * sn;
+    if (lastScan == NULL)
+        sn = snapshot(target,!readonly);
+    else
+        sn = lastScan;
+    if (!sn)
+    {
+        show_error("Snapshot failed\n");
+    }
+    reader r(sn,true,target,true);
+    if (stype == UNKOWN)
+        return sn;
+    // List of found values:
+    map<void*,any_value*> values;
+    // Temporal value for extraction:
+    any_value * tmp = new any_value(&buff);
+    // Structures used for writing into file:
+    s_scan_header sc;
+    s_value sv;
+    // Checking ALL MEMORY OF THE PROGRAM:
+    while(!r.eof(buff.size()))
+    {
+        r >> *tmp;
+        if (stype == EXACT)
+            if (buff == *tmp)
+            {
+                values[r.getActualMemoryPointer()] = tmp;
+                tmp = new any_value(&buff);
+            }
+        if (stype == BIGGER)
+            if (buff > *tmp)
+            {
+                values[r.getActualMemoryPointer()] = tmp;
+                tmp = new any_value(&buff);
+            }
+        if (stype == SMALLER)
+            if (buff < *tmp)
+            {
+                values[r.getActualMemoryPointer()] = tmp;
+                tmp = new any_value(&buff);
+            }
+    }
+    *ocurrences = values.size();
+    sc.vsize = sizeof(buff.size());
+    sc.values = values.size();
+    fwrite(&sc,sizeof(s_scan_header),1,result);
+    // Iterate within all values to write them into files:
+    for (map<void*,any_value*>::iterator it = values.begin(); it != values.end(); it++)
+    {
+        sv.perms = (readonly ? F_READ_ONLY : F_READ_WRITE);
+        sv.start = it->first;
+        fwrite(&sv, sizeof(s_value),1,result);
+        fwrite(it->second->getPointer(),buff.size(),1,result);
+        free(it->second);
+    }
+    // We asume the oblity of freeing the file:
+    if (lastScan == NULL)
+        fclose(sn);
+    return result;
+}

@@ -1,32 +1,7 @@
-/*
- $Id: ptrace.c,v 1.22 2007-06-07 15:16:46+01 taviso Exp taviso $
+#ifndef MEMORY_H
+#define MEMORY_H
 
- Copyright (C) 2006,2007,2009 Tavis Ormandy <taviso@sdf.lonestar.org>
- Copyright (C) 2009           Eli Dupree <elidupree@charter.net>
- Copyright (C) 2009,2010      WANG Lu <coolwanglu@gmail.com>
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-#include "config.h"
-
-/* for pread */
-# ifdef _XOPEN_SOURCE
-#  undef _XOPEN_SOURCE
-# endif
-# define _XOPEN_SOURCE 500
+// This file includes all needed to read from another process memory
 
 #include <time.h>
 #include <sys/types.h>
@@ -47,9 +22,16 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
 #include "misc.h"
+#include "reader.h"
 
 using namespace std;
+
+enum SCAN_TYPE
+{
+    EXACT, BIGGER, SMALLER, BETWEEN, INCREASED, DECREASED, INCREASEDBY, DECREASEDBY, CHANGED, UNCHANGED, FIRST, UNKOWN
+};
 
 /* to use with /proc/pid/maps */
 struct s_map
@@ -64,8 +46,9 @@ struct s_map
     // ignored pathname
 };
 
-#define show_info printf
-#define show_error printf
+
+// This buffer size is how much memory the program will read at once while doing an snapshot.
+#define BUFFER_SIZE 512
 
 bool attach(pid_t target);
 
@@ -74,7 +57,7 @@ bool detach(pid_t target);
 /* read region using /proc/pid/mem */
 ssize_t readregion(pid_t target, void *buf, size_t count, unsigned long offset);
 
-/* write region using /proc/pid/mem */
+/* write region using ptrace */
 ssize_t writeregion(pid_t target, void *buf, size_t count, unsigned long offset);
 
 /* Returns readable regions */
@@ -82,3 +65,15 @@ vector<s_map> readableRegions(pid_t target);
 
 /* Returns writeable (and readable) regions */
 vector<s_map> writeableRegions(pid_t target);
+
+/* Returns the next readable block of size of the target */
+void * nextRegion(pid_t target, void * lastRegion, size_t size);
+
+/* Creates an snapshot in a temporary file and returns a pointer to a FILE that manages it */
+FILE * snapshot(pid_t target, bool writeable = false);
+
+/* Uses the lastScan FILE for continue scans */
+FILE * searchValue(pid_t target,FILE * lastScan, bool readonly, class any_value& buff, SCAN_TYPE stype, long * ocurrences);
+
+
+#endif // MEMORY_H

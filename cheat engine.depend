@@ -111,19 +111,19 @@
 	<string.h>
 	<pwd.h>
 
-1301327781 /home/lilezek/proyectos/xeat-engine/misc.h
+1301928014 /home/lilezek/proyectos/xeat-engine/misc.h
 	<string>
 
-1301753099 source:/home/lilezek/proyectos/xeat-engine/main.cpp
+1302015343 source:/home/lilezek/proyectos/xeat-engine/main.cpp
 	<stdlib.h>
 	<stdlib.h>
 	<iostream>
 	"misc.h"
 	"memory.h"
 	"speedhack.h"
+	"reader.h"
 
-1301753011 /home/lilezek/proyectos/xeat-engine/memory.h
-	"config.h"
+1302015465 /home/lilezek/proyectos/xeat-engine/memory.h
 	<time.h>
 	<sys/types.h>
 	<sys/stat.h>
@@ -143,7 +143,9 @@
 	<fstream>
 	<sstream>
 	<vector>
+	<map>
 	"misc.h"
+	"reader.h"
 
 1301067843 /home/lilezek/proyectos/xeat-engine/config.h
 
@@ -155,11 +157,17 @@
 	<iostream>
 	<pwd.h>
 
-1301752971 source:/home/lilezek/proyectos/xeat-engine/memory.cpp
+1302015450 source:/home/lilezek/proyectos/xeat-engine/memory.cpp
 	"memory.h"
 
 1301236533 source:/home/lilezek/proyectos/xeat-engine/speedhack_utility.cpp
 	"speedhack.h"
 	"memory.h"
 	"misc.h"
+
+1302015219 source:/home/lilezek/proyectos/xeat-engine/reader.cpp
+	"reader.h"
+
+1302015228 /home/lilezek/proyectos/xeat-engine/reader.h
+	"memory.h"
 

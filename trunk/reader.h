@@ -3,6 +3,9 @@
 
 #include "memory.h"
 
+// Snapshot FILE system is:
+// s_snapshot_header - memory block - s_snapshot_header - memory block ... eof
+
 /* This structure must be at start of each block of memory in an snapshot */
 struct s_snapshot_header
 {
@@ -10,6 +13,9 @@ struct s_snapshot_header
     unsigned long size; // Size of the block
     void * start;       // Where the block is in memory
 };
+
+// Scan FILE system is:
+// s_scan_header - s_value - actual value - first value - s_value - actual value - first value - s_value - actual value ... eof
 
 /* This structure is the scan file header using when searching for values */
 struct s_scan_header
@@ -95,25 +101,29 @@ private:
     // If snapshot and not scan:
     bool snap;
     // EOF bit:
-    bool _eof;
+    bool write;
     // Structures needed:
     s_scan_header * sc;
     s_snapshot_header * sn;
+    s_value * sv;
     // How much bytes are  there left until the end of the block.
     // Used with snapshots
     unsigned long bytesLeft;
     // full size of FILE:
     unsigned long fullSize;
+
 public:
     reader(FILE * fs, bool snapshot,pid_t target, bool writeable = false);
     ~reader();
     bool eof(size_t sizeofvalue);
     void * getActualMemoryPointer();
-    FILE * getFile();
+    // Get old value.
+    void getOld(any_value &v);
+    FILE * getFile(){return f;}
+    bool getWritePerms(){return write;}
 
     // Operators:
     reader& operator>>(any_value &extract) throw (const char *);
-
 
 };
 

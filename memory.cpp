@@ -230,49 +230,57 @@ FILE * searchValue(pid_t target,FILE * lastScan, bool readonly, any_value& buff,
     reader r(sn,true,target,true);
     if (stype == UNKOWN)
         return sn;
-    // List of found values:
-    map<void*,any_value*> values;
     // Temporal value for extraction:
-    any_value * tmp = new any_value(&buff);
+    any_value tmp = new any_value(&buff);
     // Structures used for writing into file:
     s_scan_header sc;
     s_value sv;
+    // Set all zeros:
+    sc.values = 0;
+    sc.vsize = 0;
+    // Write empty s_scan_header (Will be overwrited later)
+    fwrite(&sc,sizeof(s_scan_header),1,result);
     // Checking ALL MEMORY OF THE PROGRAM:
+loop:
     while(!r.eof(buff.size()))
     {
-        r >> *tmp;
+        r >> tmp;
         if (stype == EXACT)
-            if (buff == *tmp)
-            {
-                values[r.getActualMemoryPointer()] = tmp;
-                tmp = new any_value(&buff);
-            }
+            if (buff == tmp)
+                goto store;
         if (stype == BIGGER)
-            if (buff > *tmp)
-            {
-                values[r.getActualMemoryPointer()] = tmp;
-                tmp = new any_value(&buff);
-            }
+            if (buff > tmp)
+                goto store;
         if (stype == SMALLER)
-            if (buff < *tmp)
-            {
-                values[r.getActualMemoryPointer()] = tmp;
-                tmp = new any_value(&buff);
-            }
+            if (buff < tmp)
+                goto store;
     }
-    *ocurrences = values.size();
+
+    if (false)
+    {
+store:
+        // Initiate s_value:
+        sv.perms = (readonly ? F_READ_ONLY : F_READ_WRITE);
+        sv.start = r.getActualMemoryPointer();
+        // Increment total values found:
+        sc.values++;
+        // Store s_value
+        fwrite(&sv,sizeof(s_value),1,result);
+        // Store actual value
+        fwrite(tmp.getPointer(),tmp.size(),1,result);
+        // Store old value:
+        r.getOld(tmp);
+        fwrite(tmp.getPointer(),tmp.size(),1,result);
+        goto loop;
+    }
+    // Definite some undefined values:
+    *ocurrences = sc.values;
     sc.vsize = sizeof(buff.size());
-    sc.values = values.size();
+    // Rewrite the scan header:
+    fseek(result,0,SEEK_SET);
     fwrite(&sc,sizeof(s_scan_header),1,result);
     // Iterate within all values to write them into files:
-    for (map<void*,any_value*>::iterator it = values.begin(); it != values.end(); it++)
-    {
-        sv.perms = (readonly ? F_READ_ONLY : F_READ_WRITE);
-        sv.start = it->first;
-        fwrite(&sv, sizeof(s_value),1,result);
-        fwrite(it->second->getPointer(),buff.size(),1,result);
-        free(it->second);
-    }
+
     // We asume the oblity of freeing the file:
     if (lastScan == NULL)
         fclose(sn);

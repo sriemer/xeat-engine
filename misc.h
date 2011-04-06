@@ -19,7 +19,9 @@ const char * homeDirectory(pid_t target);
 
 // Alias:
 
-#ifdef _DEBUG
+#define show_info //
+#ifdef ___DEBUG
+#undef show_info
 #define show_info printf
 #endif
 #define show_error printf

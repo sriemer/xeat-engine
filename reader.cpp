@@ -109,6 +109,7 @@ reader::reader(FILE * fs,bool snpsht,pid_t target, bool writeable)
 {
     sn = NULL;
     sc = NULL;
+    sv = NULL;
     // Init all values:
     if (fs == NULL)
     {
@@ -125,15 +126,25 @@ reader::reader(FILE * fs,bool snpsht,pid_t target, bool writeable)
     if (snap)
         sn = new s_snapshot_header;
     else
+    {
         sc = new s_scan_header;
+        sv = new s_value;
+    }
     // Define structures:
     if (snap)
     {
         fread(sn,sizeof(s_snapshot_header),1,f);
+        // Get size of memory block.
         bytesLeft = sn->size;
+        // And write ability
+        write = sn->perms&F_WRITE_ONLY;
     }
     else
+    {
         fread(sc,sizeof(s_scan_header),1,f);
+        // vsize * 2 because we have actual value and old value.
+        bytesLeft = sc->vsize * 2;
+    }
     // Get the full size of the FILE:
     long oldPos = ftell(f);
     fseek(f,0,SEEK_END);
@@ -148,12 +159,14 @@ reader::~reader()
     if (local) fclose(f);
     if (sn) free(sn);
     if (sc) free(sc);
+    if (sv) free(sv);
 }
 
 void * reader::getActualMemoryPointer()
 {
     // Calculate real position of the block from the start of the memory:
     if (snap) return (void*)((long)sn->start + ((long)sn->size - bytesLeft) - 1);
+    if (!snap) return sv->start;
     return NULL;
 }
 
@@ -162,9 +175,23 @@ bool reader::eof(size_t sizeofvalue)
     return (sizeofvalue > (fullSize - ftell(f)));
 }
 
-FILE * reader::getFile()
+void reader::getOld(any_value &v)
 {
-    return f;
+    // If snapshot, the old value and the actual value are the same.
+    // So I need to rewind a byte and extract again:
+    if (snap)
+    {
+        fseek(f,-1,SEEK_CUR);
+        this->operator>>(v);
+    }
+    // If it is a scan, old value is next to actual value, which must be already
+    // readed, so I need only to extract next bytes:
+    if (!snap)
+    {
+        // Extract value:
+        fread(v.getPointer(),v.size(),1,f);
+        bytesLeft-=v.size();
+    }
 }
 
 reader& reader::operator>>(any_value &extract) throw (const char *)
@@ -182,13 +209,47 @@ reader& reader::operator>>(any_value &extract) throw (const char *)
             fread(sn,sizeof(s_snapshot_header),1,f);
             // Get the size of the new block:
             bytesLeft = sn->size;
+            // And write ability
+            write = sn->perms&F_WRITE_ONLY;
         }
         // Read value, and go one byte forward:
 
         fread(extract.getPointer(),size,1,f);
         fseek(f,1-size,SEEK_CUR);
-        // Substract one byte of the counter:
+        // Substract one byte from the counter:
         bytesLeft--;
+    }
+    else
+    {
+        // Check if we are behind a s_value:
+        if (bytesLeft == 0)
+        {
+            // We ended extracting bytes, get next value:
+            fread(sv,sizeof(s_value),1,f);
+            // Reset bytesLeft:
+            bytesLeft = sc->vsize;
+            // Reset write ability:
+            write = sv->perms&F_WRITE_ONLY;
+            // Extract the size of the value:
+            fread(extract.getPointer(),size,1,f);
+            // Substract bytes from the counter
+            bytesLeft-=size;
+        }
+        // Else, we are behind the old value; jump next value:
+        else
+        {
+            fseek(f,size,SEEK_CUR);
+            // Now we are behind a s_value:
+            fread(sv,sizeof(s_value),1,f);
+            // Reset bytesLeft:
+            bytesLeft = sc->vsize;
+            // Reset write ability:
+            write = sv->perms&F_WRITE_ONLY;
+            // Extract the size of the value:
+            fread(extract.getPointer(),size,1,f);
+            // Substract bytes from the counter
+            bytesLeft-=size;
+        }
     }
     return *this;
 }

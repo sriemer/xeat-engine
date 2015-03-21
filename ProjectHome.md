@@ -1,0 +1,1 @@
+Portable C++ copy of Cheat Engine, targeted for linux.
